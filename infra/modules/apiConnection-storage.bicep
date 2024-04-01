@@ -1,0 +1,21 @@
+param location string = resourceGroup().location
+param connection_name string
+param storageaccount string
+param sharedkey string
+
+resource connection 'Microsoft.Web/connections@2016-06-01' = {
+  name: connection_name
+  location: location
+  
+  properties: {
+    api: {    
+      id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, connection_name)
+    }
+    parameterValues:  {
+      storageaccount: storageaccount
+      sharedkey: sharedkey
+    }
+  }
+}
+
+output connection_id string = connection.id
