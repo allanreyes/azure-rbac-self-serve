@@ -3,8 +3,8 @@ param workflowName string
 param workflow_apply_id string
 param workflow_notify_id string
 param workflow_approval_id string
+param workflow_getid_id string
 param connections_azuretables_id string
-param connections_office365groups_id string
 param connections_office365users_id string
 
 resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
@@ -30,7 +30,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
           inputs: {
             schema: {
               properties: {
-                groupName: {
+                name: {
                   type: 'string'
                 }
                 reason: {
@@ -79,7 +79,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                       ]
                     }
                     type: 'Compose'
-                    inputs: 'This is to notify you that the role \'@{triggerBody()?[\'role\']}\' has been granted to group \'@{triggerBody()?[\'groupName\']}\' as requested by @{body(\'Get_user_profile_RequestedFor\')?[\'displayName\']}.'
+                    inputs: 'This is to notify you that the role \'@{triggerBody()?[\'role\']}\' has been granted to \'@{triggerBody()?[\'name\']}\' as requested by @{body(\'Get_user_profile_RequestedFor\')?[\'displayName\']}.'
                   }
                   'logic-assign-roles-apply': {
                     runAfter: {}
@@ -109,7 +109,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                       body: {
                         body: '@{outputs(\'Compose\')}'
                         cc: '@triggerBody()?[\'requestedFor\']'
-                        subject: 'Role \'@{triggerBody()?[\'role\']}\' has been granted to group \'@{triggerBody()?[\'groupName\']}\''
+                        subject: 'Role \'@{triggerBody()?[\'role\']}\' has been granted to \'@{triggerBody()?[\'name\']}\''
                         to: '@triggerBody()?[\'requestedBy\']'
                       }
                       host: {
@@ -131,14 +131,14 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                         ]
                       }
                       type: 'Compose'
-                      inputs: 'This is to notify you that we\'ve started the approval process for assigning the the role \'@{triggerBody()?[\'role\']}\' to the group \'@{triggerBody()?[\'groupName\']}\' as requested by @{body(\'Get_user_profile_RequestedFor\')?[\'displayName\']}.'
+                      inputs: 'This is to notify you that we\'ve started the approval process for assigning the the role \'@{triggerBody()?[\'role\']}\' to the \'@{triggerBody()?[\'name\']}\' as requested by @{body(\'Get_user_profile_RequestedFor\')?[\'displayName\']}.'
                     }
                     'logic-assign-roles-infosec-approval': {
                       runAfter: {}
                       type: 'Workflow'
                       inputs: {
                         body: {
-                          groupName: '@triggerBody()?[\'groupName\']'
+                          name: '@triggerBody()?[\'name\']'
                           prinicipalId: '@variables(\'PrincipalId\')'
                           reason: '@triggerBody()?[\'reason\']'
                           requestedBy: '@triggerBody()?[\'requestedBy\']'
@@ -169,7 +169,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                         body: {
                           body: '@{outputs(\'Compose_2\')}'
                           cc: '@triggerBody()?[\'requestedFor\']'
-                          subject: 'Approval process for assigning role \'@{triggerBody()?[\'role\']}\' to group \'@{triggerBody()?[\'groupName\']}\' has started'
+                          subject: 'Approval process for assigning role \'@{triggerBody()?[\'role\']}\' to \'@{triggerBody()?[\'name\']}\' has started'
                           to: '@triggerBody()?[\'requestedBy\']'
                         }
                         host: {
@@ -295,87 +295,63 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
           type: 'Response'
           kind: 'Http'
           inputs: {
-            body: 'RoleDef: @{variables(\'RoleDefinitionId\')}\nGroupId: @{variables(\'PrincipalId\')}\nPreapproved: @{variables(\'IsPreapproved\')}'
+            body: 'RoleDef: @{variables(\'RoleDefinitionId\')}\nId: @{variables(\'PrincipalId\')}\nPreapproved: @{variables(\'IsPreapproved\')}'
             statusCode: 200
           }
         }
-        Scope_Group_Name: {
+        Scope_Name: {
           actions: {
-            Condition_GroupName_found: {
-              actions: {
-                For_each_2: {
-                  foreach: '@body(\'List_groups\')?[\'value\']'
-                  actions: {
-                    Set_variable_PrincipalId: {
-                      runAfter: {}
-                      type: 'SetVariable'
-                      inputs: {
-                        name: 'PrincipalId'
-                        value: '@items(\'For_each_2\')?[\'id\']'
-                      }
-                    }
-                  }
-                  runAfter: {}
-                  type: 'Foreach'
-                }
-              }
+            Response: {
               runAfter: {
-                List_groups: [
+                'logic-assign-roles-get-id': [
+                  'Failed'
+                ]
+              }
+              type: 'Response'
+              kind: 'Http'
+              inputs: {
+                body: '@body(\'logic-assign-roles-get-id\')'
+                statusCode: 400
+              }
+            }
+            Set_variable_3: {
+              runAfter: {
+                'logic-assign-roles-get-id': [
                   'Succeeded'
                 ]
               }
-              else: {
-                actions: {
-                  Response: {
-                    runAfter: {}
-                    type: 'Response'
-                    kind: 'Http'
-                    inputs: {
-                      body: 'Group with name \'@{triggerBody()?[\'groupName\']}\' cannot be found.'
-                      statusCode: 400
-                    }
-                  }
-                  Terminate_2: {
-                    runAfter: {
-                      Response: [
-                        'Succeeded'
-                      ]
-                    }
-                    type: 'Terminate'
-                    inputs: {
-                      runError: {
-                        message: 'Invalid Group name'
-                      }
-                      runStatus: 'Failed'
-                    }
-                  }
-                }
+              type: 'SetVariable'
+              inputs: {
+                name: 'PrincipalId'
+                value: '@{body(\'logic-assign-roles-get-id\')}'
               }
-              expression: {
-                and: [
-                  {
-                    greater: [
-                      '@length(body(\'List_groups\')?[\'value\'])'
-                      0
-                    ]
-                  }
+            }
+            Terminate_2: {
+              runAfter: {
+                Response: [
+                  'Succeeded'
                 ]
               }
-              type: 'If'
-            }
-            List_groups: {
-              runAfter: {}
-              type: 'ApiConnection'
+              type: 'Terminate'
               inputs: {
-                host: {
-                  connection: {
-                    name: '@parameters(\'$connections\')[\'office365groups\'][\'connectionId\']'
-                  }
+                runError: {
+                  message: '@{body(\'logic-assign-roles-get-id\')}'
                 }
-                method: 'get'
-                path: '/v1.0/groups'
-                queries: {
-                  '$filter': 'displayName eq \'@{triggerBody()?[\'groupName\']}\''
+                runStatus: 'Failed'
+              }
+            }
+            'logic-assign-roles-get-id': {
+              runAfter: {}
+              type: 'Workflow'
+              inputs: {
+                body: {
+                  name: '@triggerBody()?[\'name\']'
+                }
+                host: {
+                  triggerName: 'manual'
+                  workflow: {
+                    id: workflow_getid_id
+                  }
                 }
               }
             }
@@ -546,7 +522,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
             }
           }
           runAfter: {
-            Scope_Group_Name: [
+            Scope_Name: [
               'Succeeded'
             ]
           }
@@ -984,11 +960,6 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
             connectionId: connections_azuretables_id
             connectionName: 'azuretables'
             id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'azuretables')
-          }
-          office365groups: {
-            connectionId: connections_office365groups_id
-            connectionName: 'office365groups'
-            id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'office365groups')
           }
           office365users: {
             connectionId: connections_office365users_id

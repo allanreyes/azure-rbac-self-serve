@@ -26,7 +26,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
           inputs: {
             schema: {
               properties: {
-                groupName: {
+                name: {
                   type: 'string'
                 }
                 prinicipalId: {
@@ -168,7 +168,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                 body: {
                   body: '@variables(\'Message\')'
                   cc: '@triggerBody()?[\'requestedFor\']'
-                  subject: 'APPROVED: Role \'@{triggerBody()?[\'role\']}\' has been granted to group \'@{triggerBody()?[\'groupName\']}\''
+                  subject: 'APPROVED: Role \'@{triggerBody()?[\'role\']}\' has been granted to \'@{triggerBody()?[\'name\']}\''
                   to: '@triggerBody()?[\'requestedBy\']'
                 }
                 host: {
@@ -188,8 +188,8 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
               type: 'Workflow'
               inputs: {
                 body: {
-                  body: 'This is to notify you that the role \'@{triggerBody()?[\'role\']}\' previously assigned to group \'@{triggerBody()?[\'groupName\']}\' as requested by @{triggerBody()?[\'requestedByName\']}, has been removed according to the original approved duration of @{string(variables(\'Duration\'))} days.'
-                  subject: 'Role \'@{triggerBody()?[\'role\']}\' assigned to group \'@{triggerBody()?[\'groupName\']}\' has been removed according to approved duration'
+                  body: 'This is to notify you that the role \'@{triggerBody()?[\'role\']}\' previously assigned to \'@{triggerBody()?[\'name\']}\' as requested by @{triggerBody()?[\'requestedByName\']}, has been removed according to the original approved duration of @{string(variables(\'Duration\'))} days.'
+                  subject: 'Role \'@{triggerBody()?[\'role\']}\' assigned to \'@{triggerBody()?[\'name\']}\' has been removed according to approved duration'
                   to: '@triggerBody()?[\'requestedFor\']'
                 }
                 host: {
@@ -235,7 +235,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                   body: {
                     body: '@variables(\'Message\')'
                     cc: '@triggerBody()?[\'requestedFor\']'
-                    subject: 'DENIED: Role \'@{triggerBody()?[\'role\']}\' cannot be assigned to group \'@{triggerBody()?[\'groupName\']}\''
+                    subject: 'DENIED: Role \'@{triggerBody()?[\'role\']}\' cannot be assigned to \'@{triggerBody()?[\'name\']}\''
                     to: '@triggerBody()?[\'requestedBy\']'
                   }
                   host: {
@@ -346,7 +346,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                   type: 'SetVariable'
                   inputs: {
                     name: 'Message'
-                    value: 'This is to notify you that your request has been Approved for 7 days and the role \'@{triggerBody()?[\'role\']}\' has been granted to group \'@{triggerBody()?[\'groupName\']}\' as requested by @{triggerBody()?[\'requestedByName\']}.'
+                    value: 'This is to notify you that your request has been Approved for 7 days and the role \'@{triggerBody()?[\'role\']}\' has been granted to \'@{triggerBody()?[\'name\']}\' as requested by @{triggerBody()?[\'requestedByName\']}.'
                   }
                 }
               }
@@ -359,7 +359,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                   type: 'SetVariable'
                   inputs: {
                     name: 'Message'
-                    value: 'This is to notify you that your request has been Approved for 14 days and the role \'@{triggerBody()?[\'role\']}\' has been granted to group \'@{triggerBody()?[\'groupName\']}\' as requested by @{triggerBody()?[\'requestedByName\']}.'
+                    value: 'This is to notify you that your request has been Approved for 14 days and the role \'@{triggerBody()?[\'role\']}\' has been granted to \'@{triggerBody()?[\'name\']}\' as requested by @{triggerBody()?[\'requestedByName\']}.'
                   }
                 }
               }
@@ -372,7 +372,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                   type: 'SetVariable'
                   inputs: {
                     name: 'Message'
-                    value: 'This is to notify you that your request has been Approved and the role \'@{triggerBody()?[\'role\']}\' has been granted to group \'@{triggerBody()?[\'groupName\']}\' as requested by @{triggerBody()?[\'requestedByName\']}.'
+                    value: 'This is to notify you that your request has been Approved and the role \'@{triggerBody()?[\'role\']}\' has been granted to \'@{triggerBody()?[\'name\']}\' as requested by @{triggerBody()?[\'requestedByName\']}.'
                   }
                 }
               }
@@ -385,7 +385,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                 type: 'SetVariable'
                 inputs: {
                   name: 'Message'
-                  value: 'This is to notify you that your request is Denied and the role \'@{triggerBody()?[\'role\']}\' cannot be granted to group \'@{triggerBody()?[\'groupName\']}\' as requested by @{triggerBody()?[\'requestedByName\']}.'
+                  value: 'This is to notify you that your request is Denied and the role \'@{triggerBody()?[\'role\']}\' cannot be granted to \'@{triggerBody()?[\'name\']}\' as requested by @{triggerBody()?[\'requestedByName\']}.'
                 }
               }
             }

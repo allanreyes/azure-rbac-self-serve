@@ -36,7 +36,7 @@ module apiConnection 'modules/apiConnection.bicep' = [ for connection in connect
     }
   }]
 
-  module apiConnection_storage 'modules/apiConnection-storage.bicep' = {
+module apiConnection_storage 'modules/apiConnection-storage.bicep' = {
     name: 'apiConnection-storage'
     scope: rg
     params: {
@@ -45,7 +45,16 @@ module apiConnection 'modules/apiConnection.bicep' = [ for connection in connect
       sharedkey: storage.outputs.storage_key
       storageaccount: storage_name
     }
+}
+
+module apiConnection_webcontents 'modules/apiConnection-webcontents.bicep' = {
+  name: 'apiConnection-webcontents'
+  scope: rg
+  params: {
+    location: rg.location
+    connection_name: 'webcontents'
   }
+}
 
 module workflow_main 'modules/workflow.bicep' = {
   name: 'logic-assign-roles'
@@ -55,10 +64,10 @@ module workflow_main 'modules/workflow.bicep' = {
     workflowName: 'logic-assign-roles'
     connections_azuretables_id: apiConnection_storage.outputs.connection_id
     connections_office365users_id: apiConnection[1].outputs.connection_id
-    connections_office365groups_id: apiConnection[2].outputs.connection_id
     workflow_apply_id: workflow_apply.outputs.workflow_id
     workflow_approval_id: workflow_approval.outputs.workflow_id
     workflow_notify_id: workflow_notify.outputs.workflow_id
+    workflow_getid_id: worfklow_get_id.outputs.workflow_id
   }
 }
 
@@ -104,4 +113,16 @@ module workflow_approval 'modules/workflow-approval.bicep' = {
   }
 }
 
+module worfklow_get_id 'modules/workflow-get-id.bicep' = {
+  name: 'logic-assign-roles-get-id'
+  scope: rg
+  params: {
+    location: rg.location
+    workflow_name: 'logic-assign-roles-get-id'
+    connections_office365groups_id: apiConnection[2].outputs.connection_id
+    connections_webcontents_id: apiConnection_webcontents.outputs.connection_id
+  }
+}
+
 output workflow_url string = workflow_main.outputs.workflow_url
+output storage_name string = storage_name
