@@ -35,6 +35,7 @@ $storageName = $deployment.Outputs.storage_name.value
 $key = Get-AzStorageAccountKey -ResourceGroupName $resourceGroupName -Name $storageName | Select-Object -ExpandProperty Value   
 $ctx = New-AzStorageContext -StorageAccountName $storageName -StorageAccountKey $key[0]
 New-AzStorageContainer -Name preapproved -Context $ctx 
+$cloudTable = (Get-AzStorageTable -Name preapproved -Context $ctx).CloudTable
 
 Add-AzTableRow -table $cloudTable -partitionKey role -rowKey "0e5f05e5-9ab9-446b-b98d-1e2157c94125" -property @{ Name = "Quota Request Operator" }
 Add-AzTableRow -table $cloudTable -partitionKey role -rowKey "43d0d8ad-25c7-4714-9337-8ba259a9fe05" -property @{ Name = "Monitoring Reader" }
@@ -44,7 +45,7 @@ Add-AzTableRow -table $cloudTable -partitionKey role -rowKey "fa23ad8b-c56e-40d8
 
 # Double check that the pre-approved roles were added to the storage table
 
-$cloudTable = (Get-AzStorageTable -Name preapproved -Context $ctx).CloudTable
+
 Get-AzTableRow -table $cloudTable -partitionKey role | Format-Table
 
 # Copy the Invoke URL to the clipboard and on another file

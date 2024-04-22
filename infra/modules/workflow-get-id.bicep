@@ -131,6 +131,55 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
           type: 'If'
           description: 'There\'s more than 1 app registration with the same name'
         }
+        Condition_3: {
+          actions: {
+            Response_4: {
+              runAfter: {}
+              type: 'Response'
+              kind: 'Http'
+              inputs: {
+                body: 'A group or a service principal with the name (@{triggerBody()?[\'name\']}) cannot be found, please contact CCOE for additional support.'
+                statusCode: 400
+              }
+            }
+            Terminate_3: {
+              runAfter: {
+                Response_4: [
+                  'Succeeded'
+                ]
+              }
+              type: 'Terminate'
+              inputs: {
+                runError: {
+                  message: 'No records found'
+                }
+                runStatus: 'Failed'
+              }
+            }
+          }
+          runAfter: {
+            Condition: [
+              'Succeeded'
+            ]
+          }
+          expression: {
+            and: [
+              {
+                equals: [
+                  '@length(body(\'Parse_JSON\')?[\'value\'])'
+                  0
+                ]
+              }
+              {
+                equals: [
+                  '@length(body(\'List_groups\')?[\'value\'])'
+                  0
+                ]
+              }
+            ]
+          }
+          type: 'If'
+        }
         For_each: {
           foreach: '@body(\'Parse_JSON\')?[\'value\']'
           actions: {
