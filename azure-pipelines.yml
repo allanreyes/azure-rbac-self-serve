@@ -7,7 +7,7 @@ parameters:
     type: string
 
   - name: role
-    displayName: Azure Role (* requires approval)
+    displayName: Azure Role (* pre-approved)
     type: string
     default: 
     values:
@@ -180,7 +180,7 @@ parameters:
     - Bayer Ag Powered Services GDU Solution
     - Bayer Ag Powered Services Imagery Solution
     - Bayer Ag Powered Services Smart Boundary Solution User Role
-    - Billing Reader
+    - Billing Reader *
     - BizTalk Contributor
     - Blockchain Member Node Access (Preview)
     - Blueprint Contributor
@@ -386,7 +386,7 @@ parameters:
     - LocalNGFirewallAdministrator role
     - LocalRulestacksAdministrator role
     - Log Analytics Contributor
-    - Log Analytics Reader
+    - Log Analytics Reader *
     - Logic App Contributor
     - Logic App Operator
     - Logic Apps Standard Contributor (Preview)
@@ -416,7 +416,7 @@ parameters:
     - Monitoring Contributor
     - Monitoring Data Reader
     - Monitoring Metrics Publisher
-    - Monitoring Reader
+    - Monitoring Reader *
     - MySQL Backup And Export Operator
     - Network Contributor
     - New Relic APM Account Contributor
@@ -441,7 +441,7 @@ parameters:
     - Purview role 1 (Deprecated)
     - Purview role 2 (Deprecated)
     - Purview role 3 (Deprecated)
-    - Quota Request Operator
+    - Quota Request Operator *
     - Reader
     - Reader and Data Access
     - Redis Cache Contributor
@@ -520,7 +520,7 @@ parameters:
     - User Access Administrator
     - Video Indexer Restricted Viewer
     - Virtual Machine Administrator Login
-    - Virtual Machine Contributor
+    - Virtual Machine Contributor *
     - Virtual Machine Data Access Administrator (preview)
     - Virtual Machine Local User Login
     - Virtual Machine User Login
@@ -537,16 +537,16 @@ parameters:
     - Workbook Reader
     - WorkloadBuilder Migration Agent Role  
   
-  - name: adgroup
-    displayName:  AD Group
+  - name: name
+    displayName:  Name (Group or Service Principal only)
     type: string
     
   - name: requestedfor
-    displayName:  Requested For
+    displayName:  Requested For (Email Address)
     type: string
 
   - name: reason
-    displayName:  Reason
+    displayName:  Reason for this request
     type: string
 
   
@@ -554,10 +554,15 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: PowerShell@2
+  inputs:
+    filePath: 'invoke-logicapp.ps1'
+    arguments: 
+      -name "${{ parameters.name }}"
+      -reason "${{ parameters.reason }}"
+      -requestedBy '$(Build.QueuedBy)'
+      -requestedFor "${{ parameters.requestedfor }}"
+      -role "${{ parameters.role }}"
+      -subscriptionId "${{ parameters.subscriptionId }}"
+      -logicAppUrl '$(logicAppUrl)'
+    pwsh: true
