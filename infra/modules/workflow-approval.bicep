@@ -168,7 +168,10 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                 body: {
                   body: '@variables(\'Message\')'
                   cc: '@triggerBody()?[\'requestedFor\']'
+                  objectName: '@triggerBody()?[\'name\']'
+                  roleName: '@triggerBody()?[\'role\']'
                   subject: 'APPROVED: Role \'@{triggerBody()?[\'role\']}\' has been granted to \'@{triggerBody()?[\'name\']}\''
+                  subscriptionName: '@triggerBody()?[\'subscriptionName\']'
                   to: '@triggerBody()?[\'requestedBy\']'
                 }
                 host: {
@@ -189,7 +192,10 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
               inputs: {
                 body: {
                   body: 'This is to notify you that the role \'@{triggerBody()?[\'role\']}\' previously assigned to \'@{triggerBody()?[\'name\']}\' as requested by @{triggerBody()?[\'requestedByName\']}, has been removed according to the original approved duration of @{string(variables(\'Duration\'))} days.'
+                  objectName: '@triggerBody()?[\'name\']'
+                  roleName: '@triggerBody()?[\'role\']'
                   subject: 'Role \'@{triggerBody()?[\'role\']}\' assigned to \'@{triggerBody()?[\'name\']}\' has been removed according to approved duration'
+                  subscriptionName: '@triggerBody()?[\'subscriptionName\']'
                   to: '@triggerBody()?[\'requestedFor\']'
                 }
                 host: {
@@ -235,7 +241,10 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                   body: {
                     body: '@variables(\'Message\')'
                     cc: '@triggerBody()?[\'requestedFor\']'
+                    objectName: '@triggerBody()?[\'name\']'
+                    roleName: '@triggerBody()?[\'role\']'
                     subject: 'DENIED: Role \'@{triggerBody()?[\'role\']}\' cannot be assigned to \'@{triggerBody()?[\'name\']}\''
+                    subscriptionName: '@triggerBody()?[\'subscriptionName\']'
                     to: '@triggerBody()?[\'requestedBy\']'
                   }
                   host: {

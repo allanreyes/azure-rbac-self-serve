@@ -109,7 +109,10 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                       body: {
                         body: '@{outputs(\'Compose\')}'
                         cc: '@triggerBody()?[\'requestedFor\']'
+                        objectName: '@triggerBody()?[\'name\']'
+                        roleName: '@triggerBody()?[\'role\']'
                         subject: 'Role \'@{triggerBody()?[\'role\']}\' has been granted to \'@{triggerBody()?[\'name\']}\''
+                        subscriptionName: '@variables(\'SubscriptionName\')'
                         to: '@triggerBody()?[\'requestedBy\']'
                       }
                       host: {
@@ -169,7 +172,10 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
                         body: {
                           body: '@{outputs(\'Compose_2\')}'
                           cc: '@triggerBody()?[\'requestedFor\']'
+                          objectName: '@triggerBody()?[\'name\']'
+                          roleName: '@triggerBody()?[\'role\']'
                           subject: 'Approval process for assigning role \'@{triggerBody()?[\'role\']}\' to \'@{triggerBody()?[\'name\']}\' has started'
+                          subscriptionName: '@variables(\'SubscriptionName\')'
                           to: '@triggerBody()?[\'requestedBy\']'
                         }
                         host: {
